@@ -30,7 +30,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	img, _, err := ebitenutil.NewImageFromFile("sprites/background.png")
+	img, _, err := ebitenutil.NewImageFromFile("pictures/background.png")
 	if err != nil {
 		log.Fatal(err)
 	}
