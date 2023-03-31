@@ -1,8 +1,6 @@
 package game
 
 import (
-	"encoding/json"
-	"log"
 	"math/rand"
 	"time"
 
@@ -67,7 +65,7 @@ const EventTypeMove = "move"
 const EventTypeIdle = "idle"
 const EventTypeInit = "init"
 
-const ActionRun = "run"
+const ActionRun = "idle"
 const ActionIdle = "idle"
 
 const DirectionUp = 0
@@ -75,121 +73,85 @@ const DirectionDown = 1
 const DirectionLeft = 2
 const DirectionRight = 3
 
-// HandleEvent изменяет состояние мира в зависимости от произошедшего события
-func (world *World) HandleEvent(event *Event) {
-	switch event.Type {
-	case EventTypeConnect:
-		bytes, err := json.Marshal(event.Data)
-		if err != nil {
-
-			log.Fatalf("connect event error: %s", err.Error())
-		}
-		var ev EventConnect
-		err = json.Unmarshal(bytes, &ev)
-		if err != nil {
-			log.Fatalf("connect event error: %s", err.Error())
-		}
-
-		world.Units[ev.ID] = &ev.Unit
-
-	case EventTypeInit:
-		bytes, err := json.Marshal(event.Data)
-		if err != nil {
-			log.Fatalf("init event error: %s", err.Error())
-		}
-		var ev EventInit
-		err = json.Unmarshal(bytes, &ev)
-		if err != nil {
-			log.Fatalf("init event error: %s", err.Error())
-		}
-
-		if !world.IsServer {
-			world.MyID = ev.PlayerID
-			world.Units = ev.Units
-		}
-
-	case EventTypeMove:
-		bytes, err := json.Marshal(event.Data)
-		if err != nil {
-			log.Fatalf("move event error: %s", err.Error())
-		}
-		var ev EventMove
-		err = json.Unmarshal(bytes, &ev)
-		if err != nil {
-			log.Fatalf("move event error: %s", err.Error())
-		}
-
-		unit := world.Units[ev.UnitID]
-		unit.Action = ActionRun
-		if ev.Shot {
-			unit.IsShot = ev.Shot
-		}
-		if unit.IsShot && ev.Shot {
-			unit.Shot.X = unit.X
-			unit.Shot.Y = unit.Y
-		}
-		if unit.IsShot {
-			for _, unit2 := range world.Units {
-				if unit2.X >= unit.Shot.X && unit2.ID != unit.ID && !unit2.IsDead {
-					world.Units[unit2.ID].IsDead = true
-					unit.IsShot = false
-					return
-				}
+func (ev *EventMove) handleEvent(world *World) {
+	unit := world.Units[ev.UnitID]
+	unit.Action = ActionRun
+	if ev.Shot {
+		unit.IsShot = ev.Shot
+	}
+	if unit.IsShot && ev.Shot {
+		unit.Shot.X = unit.X
+		unit.Shot.Y = unit.Y
+	}
+	if unit.IsShot {
+		for _, unit2 := range world.Units {
+			if unit2.X >= unit.Shot.X && unit2.ID != unit.ID && !unit2.IsDead {
+				world.Units[unit2.ID].IsDead = true
+				unit.IsShot = false
+				return
 			}
-		}
-		if unit.Shot.X > 10 {
-			unit.Shot.X -= 3
-		} else {
-			unit.IsShot = false
-		}
-
-		switch ev.Direction {
-		case DirectionUp:
-			unit.Y--
-		case DirectionDown:
-			unit.Y++
-		case DirectionLeft:
-			unit.X--
-			unit.HorizontalDirection = ev.Direction
-		case DirectionRight:
-			unit.X++
-			unit.HorizontalDirection = ev.Direction
-		}
-
-	case EventTypeIdle:
-		bytes, err := json.Marshal(event.Data)
-		if err != nil {
-			log.Fatalf("idle event error: %s", err.Error())
-		}
-		var ev EventIdle
-		err = json.Unmarshal(bytes, &ev)
-		if err != nil {
-			log.Fatalf("idle event error: %s", err.Error())
-		}
-		unit := world.Units[ev.UnitID]
-		unit.Action = ActionIdle
-		if ev.Shot {
-			unit.IsShot = ev.Shot
-		}
-		if unit.IsShot && ev.Shot {
-			unit.Shot.X = unit.X
-			unit.Shot.Y = unit.Y
-		}
-		if unit.IsShot {
-			for _, unit2 := range world.Units {
-				if unit2.X >= unit.Shot.X && unit2.ID != unit.ID && !unit2.IsDead {
-					world.Units[unit2.ID].IsDead = true
-					unit.IsShot = false
-					return
-				}
-			}
-		}
-		if unit.Shot.X > 10 {
-			unit.Shot.X -= 3
-		} else {
-			unit.IsShot = false
 		}
 	}
+	if unit.Shot.X > 10 {
+		unit.Shot.X -= 3
+	} else {
+		unit.IsShot = false
+	}
+
+	switch ev.Direction {
+	case DirectionUp:
+		unit.Y--
+	case DirectionDown:
+		unit.Y++
+	case DirectionLeft:
+		unit.X--
+		unit.HorizontalDirection = ev.Direction
+	case DirectionRight:
+		unit.X++
+		unit.HorizontalDirection = ev.Direction
+	}
+}
+
+func (ev *EventIdle) handleEvent(world *World) {
+	unit := world.Units[ev.UnitID]
+	unit.Action = ActionIdle
+	if ev.Shot {
+		unit.IsShot = ev.Shot
+	}
+	if unit.IsShot && ev.Shot {
+		unit.Shot.X = unit.X
+		unit.Shot.Y = unit.Y
+	}
+	if unit.IsShot {
+		for _, unit2 := range world.Units {
+			if unit2.X >= unit.Shot.X && unit2.ID != unit.ID && !unit2.IsDead {
+				world.Units[unit2.ID].IsDead = true
+				unit.IsShot = false
+				return
+			}
+		}
+	}
+	if unit.Shot.X > 10 {
+		unit.Shot.X -= 3
+	} else {
+		unit.IsShot = false
+	}
+}
+
+func (ev *EventInit) handleEvent(world *World) {
+	if !world.IsServer {
+		world.MyID = ev.PlayerID
+		world.Units = ev.Units
+	}
+}
+
+func (ev *EventConnect) handleEvent(world *World) {
+	world.Units[ev.ID] = &ev.Unit
+}
+
+// HandleEvent изменяет состояние мира в зависимости от произошедшего события
+func (world *World) HandleEvent(event handler) {
+	event.handleEvent(world)
 }
 
 func (world *World) AddPlayer() *Unit {
@@ -207,6 +169,6 @@ func (world *World) AddPlayer() *Unit {
 		SpriteName: skins[rnd.Intn(len(skins))],
 	}
 	world.Units[id] = unit
-
+	world.MyID = id
 	return unit
 }

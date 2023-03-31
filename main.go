@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/gaaavr/gophers-of-war/game"
-	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -17,11 +16,8 @@ var x float64
 
 type Game struct {
 	world *game.World
-	conn  *websocket.Conn
 	frame int
 }
-
-const url = "ws://127.0.0.1:3001/ws"
 
 func (g *Game) Update() error {
 	g.frame++
@@ -78,60 +74,44 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		shot = true
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
-		g.conn.WriteJSON(game.Event{
-			Type: game.EventTypeMove,
-			Data: game.EventMove{
-				UnitID:    g.world.MyID,
-				Direction: game.DirectionRight,
-				Shot:      shot,
-			},
+		g.world.HandleEvent(&game.EventMove{
+			UnitID:    g.world.MyID,
+			Direction: game.DirectionRight,
+			Shot:      shot,
 		})
 		return
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		g.conn.WriteJSON(game.Event{
-			Type: game.EventTypeMove,
-			Data: game.EventMove{
-				UnitID:    g.world.MyID,
-				Direction: game.DirectionLeft,
-				Shot:      shot,
-			},
+		g.world.HandleEvent(&game.EventMove{
+			UnitID:    g.world.MyID,
+			Direction: game.DirectionLeft,
+			Shot:      shot,
 		})
 		return
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.IsKeyPressed(ebiten.KeyUp) {
-		g.conn.WriteJSON(game.Event{
-			Type: game.EventTypeMove,
-			Data: game.EventMove{
-				UnitID:    g.world.MyID,
-				Direction: game.DirectionUp,
-				Shot:      shot,
-			},
+		g.world.HandleEvent(&game.EventMove{
+			UnitID:    g.world.MyID,
+			Direction: game.DirectionUp,
+			Shot:      shot,
 		})
 		return
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyDown) {
-		g.conn.WriteJSON(game.Event{
-			Type: game.EventTypeMove,
-			Data: game.EventMove{
-				UnitID:    g.world.MyID,
-				Direction: game.DirectionDown,
-				Shot:      shot,
-			},
+		g.world.HandleEvent(&game.EventMove{
+			UnitID:    g.world.MyID,
+			Direction: game.DirectionDown,
+			Shot:      shot,
 		})
 		return
 	}
-	if g.world.Units[g.world.MyID].Action == game.ActionRun || g.world.Units[g.world.MyID].Action == game.EventTypeIdle {
-		g.conn.WriteJSON(game.Event{
-			Type: game.EventTypeIdle,
-			Data: game.EventMove{
-				UnitID: g.world.MyID,
-				Shot:   shot,
-			},
-		})
-	}
+
+	g.world.HandleEvent(&game.EventIdle{
+		UnitID: g.world.MyID,
+		Shot:   shot,
+	})
 
 }
 
@@ -140,27 +120,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
-	if err != nil {
-		log.Fatalf("connection error: %s", err.Error())
-	}
 	g := Game{
 		world: &game.World{
 			IsServer: false,
 			Units:    game.Units{},
 		},
-		conn: conn,
 	}
-	go func(conn *websocket.Conn) {
-		defer conn.Close()
-		for {
-			var event game.Event
-			conn.ReadJSON(&event)
-			g.world.HandleEvent(&event)
-			log.Println(event)
-		}
-
-	}(conn)
+	g.world.AddPlayer()
 	ebiten.SetWindowSize(640, 640)
 	ebiten.SetWindowTitle("Gophers of war")
 	ebiten.SetCursorMode(ebiten.CursorModeVisible)
