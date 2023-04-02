@@ -1,14 +1,8 @@
 package game
 
-const EventTypeConnect = "connect"
-const EventTypeMove = "move"
-const EventTypeIdle = "idle"
-const EventTypeInit = "init"
-
 type EventMove struct {
 	Direction int  `json:"direction"`
 	Shot      bool `json:"shot"`
-	IsDead    bool `json:"is_dead"`
 }
 
 func (ev *EventMove) handleEvent(world *World) {
@@ -34,6 +28,5 @@ func (ev *EventMove) handleEvent(world *World) {
 }
 
 type EventIdle struct {
-	Shot   bool `json:"shot"`
-	IsDead bool `json:"is_dead"`
+	Shot bool `json:"shot"`
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type Game struct {
@@ -68,7 +69,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for _, sh := range g.world.Shots {
 		op2 := &ebiten.DrawImageOptions{}
 		op2.GeoM.Translate(sh.X, sh.Y)
-		img, _, err = ebitenutil.NewImageFromFile("fire.png")
+		img, _, err = ebitenutil.NewImageFromFile("pictures/fire.png")
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -79,7 +80,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		return
 	}
 	shot := false
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		shot = true
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {

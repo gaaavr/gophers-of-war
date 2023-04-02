@@ -16,7 +16,7 @@ func (s *Shot) getShotOpts(direction int, x, y float64) {
 		s.X = x + 16
 		s.Direction = DirectionRight
 	}
-	s.Y = y
+	s.Y = y + 2
 }
 
 func (s Shots) resolveShots() Shots {
@@ -27,9 +27,9 @@ func (s Shots) resolveShots() Shots {
 		}
 		switch shot.Direction {
 		case DirectionLeft:
-			s[idx].X--
+			s[idx].X -= 3
 		case DirectionRight:
-			s[idx].X++
+			s[idx].X += 3
 		}
 		newShots = append(newShots, s[idx])
 	}
