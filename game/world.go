@@ -11,7 +11,7 @@ type World struct {
 	Shots
 }
 
-const ActionRun = "idle"
+const ActionRun = "run"
 const ActionIdle = "idle"
 
 const DirectionUp = 0
