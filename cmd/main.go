@@ -10,7 +10,7 @@ import (
 func main() {
 	g := game.NewGame()
 	g.AddPlayer()
-	ebiten.SetWindowSize(640, 640)
+	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Gophers of war")
 	ebiten.SetCursorMode(ebiten.CursorModeVisible)
 	ebiten.SetCursorShape(ebiten.CursorShapeCrosshair)

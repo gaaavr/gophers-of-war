@@ -6,18 +6,31 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/gaaavr/gophers-of-war/game/level"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type Game struct {
-	world *World
-	frame int
+	w, h         int
+	currentLevel *level.Level
+
+	camX, camY float64
+	camScale   float64
+	camScaleTo float64
+
+	mousePanX, mousePanY int
+
+	offscreen *ebiten.Image
+	world     *World
+	frame     int
 }
 
 func NewGame() Game {
+	l, _ := level.NewLevel()
 	return Game{
+		currentLevel: l,
 		world: &World{
 			Units: Units{},
 		},
@@ -66,6 +79,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		screen.DrawImage(img, op)
 	}
+
 	for _, sh := range g.world.Shots {
 		op2 := &ebiten.DrawImageOptions{}
 		op2.GeoM.Translate(sh.X, sh.Y)
@@ -76,11 +90,26 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		screen.DrawImage(img, op2)
 	}
+
+	for _, sh := range g.world.mobs {
+		op2 := &ebiten.DrawImageOptions{}
+		op2.GeoM.Translate(sh.X, sh.Y)
+		spriteIndex := (g.frame / 7) % 4
+		img, _, err = ebitenutil.NewImageFromFile("pictures/" + sh.spriteName +
+			"_" + "run" + "_" + strconv.Itoa(spriteIndex) + ".png")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		screen.DrawImage(img, op2)
+	}
+
 	if g.world.Units[g.world.MyID].IsDead {
 		return
 	}
+
 	shot := false
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 		shot = true
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
@@ -126,4 +155,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func (g *Game) AddPlayer() {
 	g.world.addPlayer()
+}
+
+func (g *Game) AddMobs() {
+	g.world.addMob()
 }

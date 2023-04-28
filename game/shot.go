@@ -19,20 +19,34 @@ func (s *Shot) getShotOpts(direction int, x, y float64) {
 	s.Y = y + 2
 }
 
-func (s Shots) resolveShots() Shots {
-	newShots := make(Shots, 0, len(s))
-	for idx, shot := range s {
+func (world *World) resolveShots() {
+	newShots := make(Shots, 0, len(world.Shots))
+	for _, shot := range world.Shots {
+		var isShot bool
 		if shot.X <= 10 || shot.X >= 300 {
+			continue
+		}
+		for id, mobe := range world.mobs {
+			if mobe.isDead {
+				continue
+			}
+			if mobe.isKilled(shot.X, shot.Y) {
+				world.mobs[id].isDead = true
+				isShot = true
+				break
+			}
+		}
+		if isShot {
 			continue
 		}
 		switch shot.Direction {
 		case DirectionLeft:
-			s[idx].X -= 3
+			shot.X -= 1
 		case DirectionRight:
-			s[idx].X += 3
+			shot.X += 1
 		}
-		newShots = append(newShots, s[idx])
+		newShots = append(newShots, shot)
 	}
-	return newShots
+	world.Shots = newShots
 
 }

@@ -5,40 +5,37 @@ import (
 )
 
 type World struct {
-	MyID         string
-	counterSkins int
+	MyID               string
+	counterPlayerSkins int
+	counterMobSkins    int
 	Units
 	Shots
+	mobs
 }
 
 const ActionRun = "run"
 const ActionIdle = "idle"
 
-const DirectionUp = 0
-const DirectionDown = 1
-const DirectionLeft = 2
-const DirectionRight = 3
-
-func (ev *EventIdle) handleEvent(world *World) {
-	unit := world.Units[world.MyID]
-	unit.Action = ActionIdle
-	if ev.Shot {
-		shot := Shot{}
-		shot.getShotOpts(unit.HorizontalDirection, unit.X, unit.Y)
-		world.Shots = append(world.Shots, shot)
-	}
-}
+const (
+	DirectionUp = iota
+	DirectionDown
+	DirectionLeft
+	DirectionRight
+	DirectionUpLeft
+	DirectionUpRight
+	DirectionDownLeft
+	DirectionDownRight
+)
 
 // HandleEvent изменяет состояние мира в зависимости от произошедшего события
 func (world *World) HandleEvent(event handler) {
-	world.Shots = world.Shots.resolveShots()
+	world.resolveShots()
+	world.resolveMobs(world.Units[world.MyID].X, world.Units[world.MyID].Y)
 	event.handleEvent(world)
 }
 
 func (world *World) addPlayer() *Unit {
-	skins := []string{
-		"gopher_1",
-	}
+	skins := []string{"gopher_1"}
 	id := uuid.NewV4().String()
 	unit := &Unit{
 		ID:         id,
@@ -46,10 +43,26 @@ func (world *World) addPlayer() *Unit {
 		X:          150,
 		Y:          110,
 		Frame:      1,
-		SpriteName: skins[world.counterSkins],
+		SpriteName: skins[world.counterPlayerSkins],
 	}
 	world.Units[id] = unit
 	world.MyID = id
-	world.counterSkins++
+	world.counterPlayerSkins++
+	return unit
+}
+
+func (world *World) addMob() *Unit {
+	skins := []string{"monster_1"}
+	id := uuid.NewV4().String()
+	unit := &Unit{
+		ID:         id,
+		Action:     ActionIdle,
+		X:          180,
+		Y:          90,
+		Frame:      1,
+		SpriteName: skins[world.counterMobSkins],
+	}
+	world.Units[id] = unit
+	world.counterMobSkins++
 	return unit
 }
