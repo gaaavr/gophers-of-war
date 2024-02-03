@@ -41,9 +41,9 @@ func (world *World) resolveShots() {
 		}
 		switch shot.Direction {
 		case DirectionLeft:
-			shot.X -= 1
+			shot.X -= 3
 		case DirectionRight:
-			shot.X += 1
+			shot.X += 3
 		}
 		newShots = append(newShots, shot)
 	}

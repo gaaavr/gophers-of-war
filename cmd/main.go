@@ -3,18 +3,28 @@ package main
 import (
 	"log"
 
-	"github.com/gaaavr/gophers-of-war/game"
 	"github.com/hajimehoshi/ebiten/v2"
+
+	"github.com/gaaavr/gophers-of-war/game"
+)
+
+const (
+	ScreenWidth  = 1200
+	ScreenHeight = 800
 )
 
 func main() {
-	g := game.NewGame()
+	g, err := game.NewGame()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	g.AddPlayer()
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
 	ebiten.SetWindowTitle("Gophers of war")
 	ebiten.SetCursorMode(ebiten.CursorModeVisible)
 	ebiten.SetCursorShape(ebiten.CursorShapeCrosshair)
-	if err := ebiten.RunGame(&g); err != nil {
+	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
 }

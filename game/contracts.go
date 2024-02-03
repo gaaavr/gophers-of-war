@@ -1,5 +1,5 @@
 package game
 
-type handler interface {
+type Handler interface {
 	handleEvent(world *World)
 }

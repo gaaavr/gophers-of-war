@@ -8,8 +8,9 @@ import (
 var counter int
 
 type EventMove struct {
-	Direction int  `json:"direction"`
-	Shot      bool `json:"shot"`
+	DirectionX int  `json:"direction"`
+	DirectionY int  `json:"direction"`
+	Shot       bool `json:"shot"`
 }
 
 func (ev *EventMove) handleEvent(world *World) {
@@ -25,18 +26,32 @@ func (ev *EventMove) handleEvent(world *World) {
 			world.mobs = append(world.mobs, mob{X: rnd.Float64()*300 + 10, Y: rnd.Float64()*220 + 10, spriteName: "monster_1"})
 		}
 	}
-	switch ev.Direction {
-	case DirectionUp:
-		unit.Y--
-	case DirectionDown:
-		unit.Y++
+
+	pan1, pan2 := 0.0, 0.0
+	switch ev.DirectionX {
 	case DirectionLeft:
-		unit.X--
-		unit.HorizontalDirection = ev.Direction
+		pan1 = -1
+		unit.HorizontalDirection = ev.DirectionX
 	case DirectionRight:
-		unit.X++
-		unit.HorizontalDirection = ev.Direction
+		unit.HorizontalDirection = ev.DirectionX
+		pan1 = 1
 	}
+
+	switch ev.DirectionY {
+	case DirectionUp:
+		pan2 = -1
+	case DirectionDown:
+		pan2 = 1
+	}
+
+	if ev.DirectionX != 0 {
+		unit.X += pan1
+	}
+
+	if ev.DirectionY != 0 {
+		unit.Y += pan2
+	}
+
 }
 
 type EventIdle struct {

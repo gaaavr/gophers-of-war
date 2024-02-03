@@ -17,31 +17,27 @@ const ActionRun = "run"
 const ActionIdle = "idle"
 
 const (
-	DirectionUp = iota
+	DirectionUp = iota + 1
 	DirectionDown
 	DirectionLeft
 	DirectionRight
-	DirectionUpLeft
-	DirectionUpRight
-	DirectionDownLeft
-	DirectionDownRight
 )
 
 // HandleEvent изменяет состояние мира в зависимости от произошедшего события
-func (world *World) HandleEvent(event handler) {
+func (world *World) HandleEvent(event Handler) {
 	world.resolveShots()
 	world.resolveMobs(world.Units[world.MyID].X, world.Units[world.MyID].Y)
 	event.handleEvent(world)
 }
 
 func (world *World) addPlayer() *Unit {
-	skins := []string{"gopher_1"}
+	skins := []string{"gopher"}
 	id := uuid.NewV4().String()
 	unit := &Unit{
 		ID:         id,
 		Action:     ActionIdle,
-		X:          150,
-		Y:          110,
+		X:          50,
+		Y:          100,
 		Frame:      1,
 		SpriteName: skins[world.counterPlayerSkins],
 	}
