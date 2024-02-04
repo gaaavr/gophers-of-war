@@ -1,15 +1,14 @@
 package game
 
 type Unit struct {
-	ID                  string  `json:"id"`
-	X                   float64 `json:"x"`
-	Y                   float64 `json:"y"`
-	SpriteName          string  `json:"sprite_name"`
-	Action              string  `json:"action"`
-	Frame               int     `json:"frame"`
-	HorizontalDirection int     `json:"direction"`
-	IsDead              bool    `json:"is_dead"`
-	Shots               []Shot
+	ID                  string
+	X                   float64
+	Y                   float64
+	SpriteName          string
+	Action              string
+	Frame               int
+	HorizontalDirection int
+	IsDead              bool
 }
 
 type Units map[string]*Unit

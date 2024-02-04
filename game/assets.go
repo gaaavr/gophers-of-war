@@ -20,11 +20,12 @@ type Assets struct {
 func LoadAssets() (*Assets, error) {
 	a := &Assets{}
 
-	var err error
-	a.CharacterSprites, err = loadCharactersSprites()
+	characterSprites, err := loadCharactersSprites()
 	if err != nil {
 		return nil, err
 	}
+
+	a.CharacterSprites = characterSprites
 
 	// tile map
 	a.TileSprites = make([]*ebiten.Image, backgroundTilesCount)
@@ -42,7 +43,6 @@ func LoadAssets() (*Assets, error) {
 }
 
 func loadCharactersSprites() ([][][]*ebiten.Image, error) {
-
 	charactersSprites := []string{"gopher"}
 	animationTypes := []string{"idle", "run"}
 
@@ -56,7 +56,7 @@ func loadCharactersSprites() ([][][]*ebiten.Image, error) {
 
 			for i := 0; i < framesCount; i++ {
 				s, _, err := ebitenutil.NewImageFromFile(
-					fmt.Sprintf("assets/images/%s/%s/%d.png", char, animationType, i),
+					fmt.Sprintf("assets/images/heroes/%s/%s/%d.png", char, animationType, i),
 				)
 				if err != nil {
 					return nil, err
